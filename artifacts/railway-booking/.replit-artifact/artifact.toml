@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Railway Booking"
+description = "A train ticket booking app for searching routes, managing passenger details, completing a sandbox payment, checking PNRs, and downloading tickets."
+version = "1.0.0"
+id = "artifacts/railway-booking"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23281
+
+[services.development]
+run = "pnpm --filter @workspace/railway-booking run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/railway-booking", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/railway-booking/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23281"
+BASE_PATH = "/"

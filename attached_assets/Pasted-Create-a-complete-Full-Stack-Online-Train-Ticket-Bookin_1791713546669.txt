@@ -1,0 +1,891 @@
+Create a complete **Full-Stack Online Train Ticket Booking System**.
+
+The project must be properly separated into frontend, backend, database, API integration, and feature-specific Java packages.
+
+## 1. TECHNOLOGY STACK
+
+### Frontend
+- React.js
+- JavaScript
+- Normal CSS only
+- DO NOT use Tailwind CSS
+- Three.js / React Three Fiber for 3D effects
+- GSAP for animations where useful
+- Modern responsive UI
+- Smooth transitions and interactive 3D railway/train elements
+
+### Backend
+- Java
+- Spring Boot
+- REST API
+- Maven
+
+### Database
+- MongoDB
+- Use MongoDB for:
+  - User accounts
+  - Authentication data
+  - User profiles
+  - Passenger information
+  - Booking records
+  - PNR records
+  - Payment records
+  - Ticket information
+
+### Train API
+Use a legitimate **IRCTC-compatible / railway Train API** for real-time railway information.
+
+The API integration should support, where available:
+- Train search
+- Train schedule
+- Train availability
+- Seat availability
+- Fare information
+- Train running/runtime status
+
+Keep the Train API configuration separate so that the API provider can be changed later.
+
+---
+
+# 2. IMPORTANT CODE GENERATION RULE
+
+**DO NOT PUT THE ENTIRE PROJECT IN ONE FILE.**
+
+Generate every major feature in its own Java package.
+
+Every class must be placed in its appropriate file.
+
+Show the complete project as:
+
+```text
+project-root/
+│
+├── frontend/
+│   └── React project
+│
+└── backend/
+    └── Java Spring Boot project
+```
+
+Inside the Java backend, use a proper package and subpackage structure.
+
+For example:
+
+```text
+backend/
+└── src/
+    └── main/
+        ├── java/
+        │   └── com/
+        │       └── trainbooking/
+        │           ├── TrainBookingApplication.java
+        │           │
+        │           ├── auth/
+        │           │   ├── controller/
+        │           │   │   └── AuthController.java
+        │           │   ├── service/
+        │           │   │   └── AuthService.java
+        │           │   ├── model/
+        │           │   │   └── User.java
+        │           │   ├── repository/
+        │           │   │   └── UserRepository.java
+        │           │   └── dto/
+        │           │       ├── LoginRequest.java
+        │           │       └── SignupRequest.java
+        │           │
+        │           ├── trainticket/
+        │           │   ├── controller/
+        │           │   ├── service/
+        │           │   ├── model/
+        │           │   ├── repository/
+        │           │   └── dto/
+        │           │
+        │           ├── trainsearch/
+        │           │   ├── controller/
+        │           │   ├── service/
+        │           │   ├── api/
+        │           │   └── dto/
+        │           │
+        │           ├── runtime/
+        │           │   ├── controller/
+        │           │   ├── service/
+        │           │   ├── api/
+        │           │   └── dto/
+        │           │
+        │           ├── payment/
+        │           │   ├── controller/
+        │           │   ├── service/
+        │           │   ├── model/
+        │           │   ├── repository/
+        │           │   └── gateway/
+        │           │
+        │           ├── confirmationticket/
+        │           │   ├── controller/
+        │           │   ├── service/
+        │           │   ├── model/
+        │           │   └── repository/
+        │           │
+        │           ├── pnr/
+        │           │   ├── controller/
+        │           │   ├── service/
+        │           │   ├── model/
+        │           │   └── repository/
+        │           │
+        │           ├── pdf/
+        │           │   ├── service/
+        │           │   └── generator/
+        │           │
+        │           ├── user/
+        │           │   ├── controller/
+        │           │   ├── service/
+        │           │   ├── model/
+        │           │   └── repository/
+        │           │
+        │           └── config/
+        │               └── SecurityConfig.java
+        │
+        └── resources/
+            └── application.properties
+```
+
+The actual directory structure may be improved if necessary, but maintain the same feature-based separation.
+
+---
+
+# 3. FEATURE-SPECIFIC JAVA PACKAGES
+
+Each major task must have its own package.
+
+## AUTH PACKAGE
+
+Package:
+
+```text
+auth/
+```
+
+Responsible for:
+
+- User signup
+- User login
+- Logout
+- Authentication
+- Password encryption
+- Authentication validation
+
+Use MongoDB for user data.
+
+---
+
+# 4. TRAIN SEARCH PACKAGE
+
+Package:
+
+```text
+trainsearch/
+```
+
+Responsible for:
+
+- Source station
+- Destination station
+- Journey date
+- Train search
+- Calling Train API
+- Returning train information
+
+Display:
+
+- Train number
+- Train name
+- Source
+- Destination
+- Departure
+- Arrival
+- Duration
+- Available classes
+- Fare
+- Availability
+
+---
+
+# 5. TRAIN TICKET PACKAGE
+
+Package:
+
+```text
+trainticket/
+```
+
+Responsible for the actual booking process.
+
+Functions:
+
+- Select train
+- Select class
+- Passenger details
+- Seat/berth selection where supported
+- Fare calculation
+- Create booking request
+- Validate booking information
+
+Booking flow:
+
+```text
+Search Train
+     ↓
+Select Train
+     ↓
+Select Class
+     ↓
+Check Availability
+     ↓
+Passenger Details
+     ↓
+Booking Summary
+     ↓
+Payment
+```
+
+---
+
+# 6. RUNTIME TRAIN PACKAGE
+
+Package:
+
+```text
+runtime/
+```
+
+Responsible for real-time train checking.
+
+Features:
+
+- Train runtime status
+- Current train status/location where API supports it
+- Delay information
+- Expected arrival
+- Upcoming station information
+- Running status
+
+Flow:
+
+```text
+Train Number
+      ↓
+Java Runtime Controller
+      ↓
+Runtime Service
+      ↓
+Train API
+      ↓
+Real-Time Train Information
+      ↓
+React UI
+```
+
+---
+
+# 7. PAYMENT PACKAGE
+
+Package:
+
+```text
+payment/
+```
+
+Responsible ONLY for payment-related functionality.
+
+Functions:
+
+- Create payment
+- Calculate final amount
+- Payment request
+- Payment processing
+- Payment verification
+- Payment success
+- Payment failure
+- Payment status
+
+For the college project, use a test/sandbox payment gateway or simulated payment system if a live gateway is not available.
+
+Never store:
+- Card number
+- CVV
+- UPI PIN
+- Passwords
+- Other sensitive payment credentials
+
+Booking should only become confirmed after successful payment verification.
+
+---
+
+# 8. CONFIRMATION TICKET PACKAGE
+
+Package:
+
+```text
+confirmationticket/
+```
+
+Responsible for confirmed ticket creation.
+
+After successful payment:
+
+```text
+Payment Successful
+       ↓
+Confirmation Ticket
+       ↓
+Generate Booking ID
+       ↓
+Generate PNR
+       ↓
+Save Ticket
+       ↓
+Generate PDF
+```
+
+Store confirmation information in MongoDB.
+
+---
+
+# 9. PNR PACKAGE
+
+Package:
+
+```text
+pnr/
+```
+
+Responsible for:
+
+- Generate unique PNR
+- Search PNR
+- Validate PNR
+- Retrieve ticket
+- Return ticket information
+
+Important feature:
+
+A user who already has a ticket should be able to download it **without logging in or creating an account**.
+
+Homepage should contain:
+
+```text
+Check / Download Ticket
+```
+
+User enters:
+
+```text
+PNR Number
+```
+
+Then:
+
+```text
+PNR
+ ↓
+PNR Controller
+ ↓
+PNR Service
+ ↓
+MongoDB
+ ↓
+Ticket Details
+ ↓
+Download PDF
+```
+
+For better security, optionally verify an additional booking detail such as passenger mobile number or email.
+
+---
+
+# 10. PDF PACKAGE
+
+Package:
+
+```text
+pdf/
+```
+
+Responsible for:
+
+- Generate PDF ticket
+- Format ticket
+- Return PDF
+- Download PDF
+
+PDF ticket should contain:
+
+- PNR
+- Booking ID
+- Passenger name
+- Passenger details
+- Train number
+- Train name
+- Source
+- Destination
+- Journey date
+- Departure time
+- Arrival time
+- Class
+- Seat/berth
+- Fare
+- Payment status
+- Booking status
+
+Create a professional railway-style PDF.
+
+---
+
+# 11. USER PACKAGE
+
+Package:
+
+```text
+user/
+```
+
+Responsible for:
+
+- User profile
+- Update profile
+- User booking history
+- User information
+- Upcoming journeys
+- Previous journeys
+
+---
+
+# 12. MONGODB DATABASE
+
+Create appropriate MongoDB collections:
+
+```text
+users
+bookings
+passengers
+payments
+pnrs
+tickets
+```
+
+Use IDs to connect related information:
+
+```text
+userId
+bookingId
+paymentId
+pnr
+```
+
+Do not connect React directly to MongoDB.
+
+Correct architecture:
+
+```text
+React
+   ↓
+Java Spring Boot REST API
+   ↓
+Service Layer
+   ↓
+MongoDB
+```
+
+---
+
+# 13. FRONTEND REACT STRUCTURE
+
+Do not put the entire React application inside `App.jsx`.
+
+Use separate components/pages.
+
+Example:
+
+```text
+frontend/
+└── src/
+    ├── components/
+    │   ├── Navbar.jsx
+    │   ├── TrainSearch.jsx
+    │   ├── TrainCard.jsx
+    │   ├── BookingForm.jsx
+    │   ├── PassengerForm.jsx
+    │   ├── PaymentCard.jsx
+    │   ├── TicketCard.jsx
+    │   └── Loader.jsx
+    │
+    ├── pages/
+    │   ├── Home.jsx
+    │   ├── Login.jsx
+    │   ├── Signup.jsx
+    │   ├── SearchTrains.jsx
+    │   ├── TrainDetails.jsx
+    │   ├── Booking.jsx
+    │   ├── Payment.jsx
+    │   ├── Confirmation.jsx
+    │   ├── Dashboard.jsx
+    │   ├── RuntimeStatus.jsx
+    │   └── PNRDownload.jsx
+    │
+    ├── services/
+    │   ├── authService.js
+    │   ├── trainService.js
+    │   ├── bookingService.js
+    │   ├── paymentService.js
+    │   └── pnrService.js
+    │
+    ├── styles/
+    │   ├── global.css
+    │   ├── navbar.css
+    │   ├── home.css
+    │   ├── booking.css
+    │   ├── ticket.css
+    │   └── dashboard.css
+    │
+    ├── App.jsx
+    └── main.jsx
+```
+
+Use normal CSS files.
+
+DO NOT use:
+
+```text
+Tailwind
+```
+
+---
+
+# 14. FRONTEND DESIGN
+
+Create a futuristic 3D train-booking experience.
+
+Use:
+
+- Three.js / React Three Fiber
+- GSAP
+- CSS animations
+- 3D train model or abstract railway environment
+- Smooth scrolling
+- Interactive cards
+- Animated buttons
+- Modern booking forms
+- Floating UI elements
+- Responsive mobile layout
+
+The design should remain usable and should not sacrifice readability for 3D effects.
+
+---
+
+# 15. COMPLETE USER FLOW
+
+## New User
+
+```text
+Home
+ ↓
+Signup
+ ↓
+Login
+ ↓
+Search Train
+ ↓
+Select Train
+ ↓
+Check Availability
+ ↓
+Passenger Details
+ ↓
+Booking Summary
+ ↓
+Payment
+ ↓
+Payment Successful
+ ↓
+Confirmation Ticket
+ ↓
+Generate PNR
+ ↓
+Generate PDF
+ ↓
+Download Ticket
+```
+
+## Existing User
+
+```text
+Login
+ ↓
+Dashboard
+ ↓
+Upcoming/Previous Booking
+ ↓
+View Ticket
+ ↓
+Download PDF
+```
+
+## Existing Ticket Without Login
+
+```text
+Home
+ ↓
+Check / Download Ticket
+ ↓
+Enter PNR
+ ↓
+Verify PNR
+ ↓
+Display Ticket
+ ↓
+Download PDF
+```
+
+## Runtime Train Checking
+
+```text
+Home
+ ↓
+Runtime Train Status
+ ↓
+Enter Train Number
+ ↓
+Java Backend
+ ↓
+Train API
+ ↓
+Real-Time Status
+ ↓
+Display Result
+```
+
+---
+
+# 16. API COMMUNICATION
+
+All communication must follow:
+
+```text
+React
+   ↓
+REST API
+   ↓
+Spring Boot Controller
+   ↓
+Service
+   ↓
+Repository / External API
+```
+
+For example:
+
+```text
+React Train Search
+       ↓
+GET /api/trains/search
+       ↓
+TrainController
+       ↓
+TrainService
+       ↓
+TrainApiClient
+       ↓
+External Train API
+       ↓
+TrainService
+       ↓
+React
+```
+
+Booking:
+
+```text
+React
+ ↓
+POST /api/bookings
+ ↓
+TrainTicketController
+ ↓
+TrainTicketService
+ ↓
+MongoDB
+```
+
+Payment:
+
+```text
+React
+ ↓
+POST /api/payments
+ ↓
+PaymentController
+ ↓
+PaymentService
+ ↓
+Payment Gateway
+ ↓
+Payment Verification
+```
+
+PNR:
+
+```text
+React
+ ↓
+GET /api/pnr/{pnr}
+ ↓
+PNRController
+ ↓
+PNRService
+ ↓
+MongoDB
+ ↓
+Ticket
+```
+
+PDF:
+
+```text
+React
+ ↓
+GET /api/tickets/{pnr}/pdf
+ ↓
+PDF Controller/Service
+ ↓
+PDF Generator
+ ↓
+PDF Response
+ ↓
+Browser Download
+```
+
+---
+
+# 17. SECURITY
+
+Implement basic proper security:
+
+- Password hashing
+- Authentication
+- Authorization for user dashboard
+- Input validation
+- API error handling
+- Environment variables for API keys
+- Never expose API keys in React
+- Never store raw payment credentials
+- Validate PNR before returning ticket information
+
+---
+
+# 18. CODE GENERATION INSTRUCTIONS
+
+When generating the project, **DO NOT combine files**.
+
+For every file:
+
+1. Show its complete path.
+2. Show the filename.
+3. Provide the complete code.
+4. Clearly explain what the file does.
+
+Example:
+
+```text
+backend/src/main/java/com/trainbooking/payment/controller/PaymentController.java
+```
+
+Then provide only the code belonging to that file.
+
+Next:
+
+```text
+backend/src/main/java/com/trainbooking/payment/service/PaymentService.java
+```
+
+Then provide its code.
+
+Continue this way for every required file.
+
+Do NOT create a giant `Backend.java`, `Main.java`, or `App.java` containing the entire backend.
+
+Do NOT put all controllers into one file.
+
+Do NOT put all services into one file.
+
+Do NOT put all models into one file.
+
+Do NOT put all packages into one file.
+
+The project must physically follow the directory/package structure.
+
+---
+
+# 19. FINAL OUTPUT REQUIREMENT
+
+Generate the project in the following order:
+
+1. Complete project architecture
+2. Complete directory tree
+3. Backend `pom.xml`
+4. MongoDB configuration
+5. Java packages and files
+6. Java code for every file separately
+7. React project structure
+8. React code for every component/page separately
+9. CSS files separately
+10. Train API integration
+11. Authentication integration
+12. Booking integration
+13. Payment integration
+14. PNR integration
+15. PDF generation
+16. Frontend-backend API connection
+17. MongoDB connection
+18. Environment configuration
+19. Installation commands
+20. How to run frontend
+21. How to run backend
+22. How to configure the Train API
+23. How to test signup/login
+24. How to test train search
+25. How to test booking/payment
+26. How to test PNR ticket download
+27. How to test runtime train status
+
+Make the code beginner-friendly, properly commented, modular, and runnable.
+
+If the complete project is too large for one response, generate it **module-by-module in multiple parts**, but never combine unrelated files into one file.
+
+The final project must have a clean separation:
+
+```text
+REACT FRONTEND
+       ↓
+JAVA SPRING BOOT
+       ↓
+┌───────────────┐
+│ Feature APIs  │
+├───────────────┤
+│ Auth          │
+│ Train Search  │
+│ Train Ticket  │
+│ Runtime       │
+│ Payment       │
+│ Confirmation  │
+│ PNR           │
+│ PDF           │
+│ User          │
+└───────────────┘
+       ↓
+   MongoDB
+
+Java Backend
+       ↓
+Real-Time Train API
+```
+
+Build the system as a **college-level full-stack project with production-style organization**, while keeping the implementation understandable for a beginner learning React, Java Spring Boot, REST APIs and MongoDB.
