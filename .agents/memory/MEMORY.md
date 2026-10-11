@@ -1,0 +1,2 @@
+- [Live railway data policy](live-railway-data.md) — never fabricate train results; keep search and runtime unavailable until a real provider is chosen and connected.
+- [MongoDB TLS connectivity](mongodb-tls-connectivity.md) — the initial workspace connection failed during TLS negotiation; recheck network access before changing app code and never weaken TLS.

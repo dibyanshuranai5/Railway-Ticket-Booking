@@ -91,6 +91,28 @@ function mergeHeaders(...sources: Array<HeadersInit | undefined>): Headers {
   return headers;
 }
 
+function readCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const prefix = `${encodeURIComponent(name)}=`;
+  const entry = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith(prefix));
+  if (!entry) return null;
+  const value = entry.slice(prefix.length);
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function isSameOriginRequest(input: RequestInfo | URL): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return new URL(resolveUrl(input), window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 function getMediaType(headers: Headers): string | null {
   const value = headers.get("content-type");
   return value ? value.split(";", 1)[0].trim().toLowerCase() : null;
@@ -336,6 +358,17 @@ export async function customFetch<T = unknown>(
   }
 
   const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
+
+  if (
+    isSameOriginRequest(input) &&
+    method !== "GET" &&
+    method !== "HEAD" &&
+    method !== "OPTIONS" &&
+    !headers.has("x-xsrf-token")
+  ) {
+    const csrfToken = readCookie("XSRF-TOKEN");
+    if (csrfToken) headers.set("X-XSRF-TOKEN", csrfToken);
+  }
 
   if (
     typeof init.body === "string" &&

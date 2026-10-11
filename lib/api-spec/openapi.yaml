@@ -1,22 +1,25 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Train ticket search, account, booking, payment, PNR and ticket API.
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: trains
+  - name: authentication
+  - name: profile
+  - name: bookings
+  - name: payments
+  - name: tickets
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +27,499 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /railway/provider:
+    get:
+      operationId: getRailwayProviderStatus
+      tags: [trains]
+      summary: Check whether a live railway data provider is connected
+      responses:
+        "200":
+          description: Provider connection status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderStatus"
+  /trains/search:
+    get:
+      operationId: searchTrains
+      tags: [trains]
+      summary: Search trains for a route and journey date
+      parameters:
+        - name: fromStation
+          in: query
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 80 }
+        - name: toStation
+          in: query
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 80 }
+        - name: journeyDate
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Trains returned by the configured railway provider
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Train"
+        "503":
+          description: No live railway provider is configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /trains/{trainNumber}/status:
+    get:
+      operationId: getTrainRuntimeStatus
+      tags: [trains]
+      summary: Get live running status for a train
+      parameters:
+        - name: trainNumber
+          in: path
+          required: true
+          schema: { type: string }
+        - name: journeyDate
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Runtime status returned by the configured provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainRuntimeStatus"
+        "503":
+          description: No live railway provider is configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /auth/signup:
+    post:
+      operationId: signUp
+      tags: [authentication]
+      summary: Create a user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignUpInput"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+        "400":
+          description: Invalid signup details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /auth/login:
+    post:
+      operationId: logIn
+      tags: [authentication]
+      summary: Sign in to an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /auth/logout:
+    post:
+      operationId: logOut
+      tags: [authentication]
+      summary: Sign out
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [authentication]
+      summary: Return the current session state
+      responses:
+        "200":
+          description: Session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+  /users/me:
+    get:
+      operationId: getMyProfile
+      tags: [profile]
+      summary: Get the signed-in user's profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Sign-in required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateMyProfile
+      tags: [profile]
+      summary: Update the signed-in user's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdateInput"
+      responses:
+        "200":
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+  /users/me/summary:
+    get:
+      operationId: getMyBookingSummary
+      tags: [profile]
+      summary: Get upcoming and previous booking counts
+      responses:
+        "200":
+          description: Booking overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingSummary"
+  /users/me/bookings:
+    get:
+      operationId: listMyBookings
+      tags: [bookings]
+      summary: List the signed-in user's bookings
+      responses:
+        "200":
+          description: Bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+  /bookings:
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a pending booking from live train availability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Booking awaiting sandbox payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "503":
+          description: Live train availability is not connected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /bookings/{bookingId}/payments/sandbox:
+    post:
+      operationId: payForBooking
+      tags: [payments]
+      summary: Run a sandbox payment for a pending booking
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxPaymentInput"
+      responses:
+        "200":
+          description: Payment outcome and booking confirmation state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResult"
+  /pnr/{pnr}:
+    get:
+      operationId: getTicketByPnr
+      tags: [tickets]
+      summary: Retrieve a ticket without signing in
+      parameters:
+        - name: pnr
+          in: path
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 12 }
+        - name: mobileLast4
+          in: query
+          required: true
+          schema: { type: string, pattern: "^[0-9]{4}$" }
+      responses:
+        "200":
+          description: Verified confirmed ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: PNR or verification details not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /tickets/{pnr}/pdf:
+    get:
+      operationId: downloadTicketPdf
+      tags: [tickets]
+      summary: Download a verified ticket PDF without signing in
+      parameters:
+        - name: pnr
+          in: path
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 12 }
+        - name: mobileLast4
+          in: query
+          required: true
+          schema: { type: string, pattern: "^[0-9]{4}$" }
+      responses:
+        "200":
+          description: PDF ticket
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: PNR or verification details not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    ProviderStatus:
+      type: object
+      required: [connected, provider, message]
+      properties:
+        connected: { type: boolean }
+        provider: { type: ["string", "null"] }
+        message: { type: string }
+        capabilities:
+          type: array
+          items: { type: string }
+    TrainClass:
+      type: object
+      required: [classCode, availableSeats, fareINR]
+      properties:
+        classCode: { type: string }
+        availableSeats: { type: integer }
+        fareINR: { type: number }
+    Train:
+      type: object
+      required: [trainNumber, trainName, fromStation, toStation, departure, arrival, durationMinutes, classes]
+      properties:
+        trainNumber: { type: string }
+        trainName: { type: string }
+        fromStation: { type: string }
+        toStation: { type: string }
+        departure: { type: string }
+        arrival: { type: string }
+        durationMinutes: { type: integer }
+        classes:
+          type: array
+          items: { $ref: "#/components/schemas/TrainClass" }
+    TrainRuntimeStatus:
+      type: object
+      required: [trainNumber, isRunning, delayMinutes, updatedAt]
+      properties:
+        trainNumber: { type: string }
+        currentLocation: { type: ["string", "null"] }
+        delayMinutes: { type: integer }
+        expectedArrival: { type: ["string", "null"] }
+        nextStation: { type: ["string", "null"] }
+        isRunning: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+    UserProfile:
+      type: object
+      required: [id, name, email, phone]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+    SessionResponse:
+      type: object
+      required: [authenticated, user]
+      properties:
+        authenticated: { type: boolean }
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/UserProfile"
+            - type: "null"
+    BookingSummary:
+      type: object
+      required: [upcoming, previous, total]
+      properties:
+        upcoming: { type: integer }
+        previous: { type: integer }
+        total: { type: integer }
+    PassengerInput:
+      type: object
+      required: [name, age, gender]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        age: { type: integer, minimum: 1, maximum: 120 }
+        gender: { type: string, enum: [MALE, FEMALE, OTHER] }
+        berthPreference:
+          type: ["string", "null"]
+          enum: [LOWER, MIDDLE, UPPER, SIDE_LOWER, SIDE_UPPER, NO_PREFERENCE, null]
+    BookingInput:
+      type: object
+      required: [trainNumber, classCode, journeyDate, passengers]
+      properties:
+        trainNumber: { type: string }
+        classCode: { type: string }
+        journeyDate: { type: string, format: date }
+        passengers:
+          type: array
+          minItems: 1
+          maxItems: 6
+          items: { $ref: "#/components/schemas/PassengerInput" }
+    Passenger:
+      type: object
+      required: [name, age, gender]
+      properties:
+        name: { type: string }
+        age: { type: integer }
+        gender: { type: string }
+        berthPreference: { type: ["string", "null"] }
+        seatNumber: { type: ["string", "null"] }
+    Booking:
+      type: object
+      required: [id, trainNumber, trainName, fromStation, toStation, journeyDate, departure, arrival, classCode, passengers, fareINR, status, pnr]
+      properties:
+        id: { type: string }
+        trainNumber: { type: string }
+        trainName: { type: string }
+        fromStation: { type: string }
+        toStation: { type: string }
+        journeyDate: { type: string, format: date }
+        departure: { type: string }
+        arrival: { type: string }
+        classCode: { type: string }
+        passengers:
+          type: array
+          items: { $ref: "#/components/schemas/Passenger" }
+        fareINR: { type: number }
+        status: { type: string, enum: [PENDING_PAYMENT, CONFIRMED, PAYMENT_FAILED] }
+        pnr: { type: ["string", "null"] }
+    SignUpInput:
+      type: object
+      required: [name, email, phone, password]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        email: { type: string, format: email }
+        phone: { type: string, minLength: 10, maxLength: 16 }
+        password: { type: string, minLength: 8, maxLength: 128 }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, maxLength: 128 }
+    ProfileUpdateInput:
+      type: object
+      required: [name, phone]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        phone: { type: string, minLength: 10, maxLength: 16 }
+    SandboxPaymentInput:
+      type: object
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [APPROVE, DECLINE] }
+    PaymentResult:
+      type: object
+      required: [id, bookingId, amountINR, status, pnr]
+      properties:
+        id: { type: string }
+        bookingId: { type: string }
+        amountINR: { type: number }
+        status: { type: string, enum: [SUCCESS, FAILED] }
+        pnr: { type: ["string", "null"] }
+    Ticket:
+      type: object
+      required: [pnr, bookingId, trainNumber, trainName, fromStation, toStation, journeyDate, departure, arrival, classCode, passengers, fareINR, paymentStatus, bookingStatus]
+      properties:
+        pnr: { type: string }
+        bookingId: { type: string }
+        trainNumber: { type: string }
+        trainName: { type: string }
+        fromStation: { type: string }
+        toStation: { type: string }
+        journeyDate: { type: string, format: date }
+        departure: { type: string }
+        arrival: { type: string }
+        classCode: { type: string }
+        passengers:
+          type: array
+          items: { $ref: "#/components/schemas/Passenger" }
+        fareINR: { type: number }
+        paymentStatus: { type: string }
+        bookingStatus: { type: string }
 

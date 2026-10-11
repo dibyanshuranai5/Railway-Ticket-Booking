@@ -1,0 +1,23 @@
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
+spring:
+  application:
+    name: train-booking-api
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: trainbooking
+      auto-index-creation: false
+  servlet:
+    multipart:
+      enabled: false
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: WARN
